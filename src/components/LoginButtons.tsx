@@ -13,6 +13,13 @@ export function AuthButtons() {
     router.refresh();
   };
 
+function mergeTesting (a: number, b: number): number {
+  return a + b;
+}
+
+console.log(mergeTesting(2, 3)); // Output: 5
+
+
   if (isPending) {
     return (
       <div className="bg-gray-300 text-gray-300 px-4 py-2 rounded animate-pulse">
