@@ -42,6 +42,7 @@ interface RoomDataRow {
     notes?: string;
     photo_back?: string;
     photo_front?: string;
+    firemarshal_capacity?: string;
   }
 
 // Feature mapping (CSV column -> feature name + category)
@@ -186,6 +187,7 @@ async function seedDatabase() {
         photoBack: row.photo_back || null,
         photoFront: row.photo_front || null,
         notes: row.notes || null,
+        fireMarshalCapacity: row.firemarshal_capacity ? parseInt(row.firemarshal_capacity) : null,
       });
 
       console.log(`  ✓ ${row.building_abbrev} ${row.room_number}`);

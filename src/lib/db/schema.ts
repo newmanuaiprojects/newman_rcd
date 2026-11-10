@@ -83,6 +83,7 @@ export const rooms = pgTable("rooms", {
   roomType: ROOM_TYPE("room_type").notNull(),
   displayName: text("display_name"), // optional special name like "Chapel"
   capacity: integer("capacity").notNull(),
+  fireMarshalCapacity: integer("fire_marshal_capacity"), // optional fire marshal capacity
   floor: integer("floor").notNull(),
   accessible: boolean("accessible").default(true).notNull(),
   notes: text("notes"),
