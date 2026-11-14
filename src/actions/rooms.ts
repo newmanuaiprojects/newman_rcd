@@ -33,9 +33,27 @@ export async function searchRooms(filters: SearchFilters): Promise<RoomWithDetai
   }
 
   if (filters.searchQuery) {
-    conditions.push(
-      sql`(${rooms.roomNumber} ILIKE ${`%${filters.searchQuery}%`} OR ${rooms.displayName} ILIKE ${`%${filters.searchQuery}%`})`
-    );
+    const tokens = filters.searchQuery
+      .trim()
+      .split(/[\s\-_]+/)
+      .flatMap((t) => {
+        const m = t.match(/^([a-z]+)(\d.*)$/i);
+        return m ? [m[1], m[2]] : [t];
+      })
+      .filter(Boolean);
+  
+    for (const token of tokens) {
+      const escaped = token.replace(/[\\%_]/g, '\\$&');
+      const pattern = `%${escaped}%`;
+      conditions.push(
+        or(
+          ilike(rooms.roomNumber, pattern),
+          ilike(rooms.displayName, pattern),
+          ilike(buildings.abbreviation, pattern),
+          ilike(buildings.name, pattern)
+        )!
+      );
+    }
   }
 
   // Base query for rooms
