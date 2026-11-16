@@ -112,7 +112,7 @@ export function SearchFilters({ buildings, features, currentFilters }: SearchFil
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && updateFilters()}
-            placeholder="Room number or name..."
+            placeholder="Room, building, or both (e.g. Eck 260)..."
             className="w-full px-3 py-2 border border-gray-300 text-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>

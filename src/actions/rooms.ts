@@ -2,7 +2,7 @@
 
 import { db } from '@/lib/db';
 import { buildings, rooms, features, roomFeatures } from '@/lib/db/schema';
-import { eq, sql, and, gte, lte, inArray } from 'drizzle-orm';
+import { eq, sql, and, or, gte, lte, ilike, inArray } from 'drizzle-orm';
 import type { SearchFilters, RoomWithDetails, Building, Feature, RoomType } from '@/types/types';
 
 export async function searchRooms(filters: SearchFilters): Promise<RoomWithDetails[]> {
@@ -33,9 +33,27 @@ export async function searchRooms(filters: SearchFilters): Promise<RoomWithDetai
   }
 
   if (filters.searchQuery) {
-    conditions.push(
-      sql`(${rooms.roomNumber} ILIKE ${`%${filters.searchQuery}%`} OR ${rooms.displayName} ILIKE ${`%${filters.searchQuery}%`})`
-    );
+    const tokens = filters.searchQuery
+      .trim()
+      .split(/[\s\-_]+/)
+      .flatMap((t) => {
+        const m = t.match(/^([a-z]+)(\d.*)$/i);
+        return m ? [m[1], m[2]] : [t];
+      })
+      .filter(Boolean);
+  
+    for (const token of tokens) {
+      const escaped = token.replace(/[\\%_]/g, '\\$&');
+      const pattern = `%${escaped}%`;
+      conditions.push(
+        or(
+          ilike(rooms.roomNumber, pattern),
+          ilike(rooms.displayName, pattern),
+          ilike(buildings.abbreviation, pattern),
+          ilike(buildings.name, pattern)
+        )!
+      );
+    }
   }
 
   // Base query for rooms
