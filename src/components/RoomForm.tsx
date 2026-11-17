@@ -16,13 +16,24 @@ interface RoomFormProps {
   buildings: Building[];
   features: Feature[];
   initial?: RoomInput;
+  defaultBuildingId?: string;
+  addBuildingHref?: string;
   submitLabel: string;
   cancelHref: string;
 }
 
 const checkbox = 'h-4 w-4 shrink-0 accent-blue-600';
 
-export function RoomForm({ action, buildings, features, initial, submitLabel, cancelHref }: RoomFormProps) {
+export function RoomForm({
+  action,
+  buildings,
+  features,
+  initial,
+  defaultBuildingId,
+  addBuildingHref,
+  submitLabel,
+  cancelHref,
+}: RoomFormProps) {
   const { errors, formAction, pending, submit } = useFormAction(action, parseRoomForm);
   const [selected, setSelected] = useState(() => new Set(Object.keys(initial?.features ?? {})));
   const [uploading, setUploading] = useState<ReadonlySet<string>>(new Set());
@@ -120,7 +131,7 @@ export function RoomForm({ action, buildings, features, initial, submitLabel, ca
       <FormSection id="room-heading" title="Room" description="Where the room is and what it is used for.">
         <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
           <Field id="buildingId" label="Building" error={errors.buildingId}>
-            <select name="buildingId" defaultValue={initial?.buildingId ?? ''} className={input} {...described('buildingId', errors.buildingId)}>
+            <select name="buildingId" defaultValue={initial?.buildingId ?? defaultBuildingId ?? ''} className={input} {...described('buildingId', errors.buildingId)}>
               <option value="" disabled>
                 Choose a building
               </option>
@@ -130,6 +141,11 @@ export function RoomForm({ action, buildings, features, initial, submitLabel, ca
                 </option>
               ))}
             </select>
+            {addBuildingHref && (
+              <Link href={addBuildingHref} className="mt-1 inline-block text-sm text-blue-600 hover:underline">
+                Building not listed? Add it
+              </Link>
+            )}
           </Field>
           <Field id="roomNumber" label="Room number" error={errors.roomNumber}>
             <input name="roomNumber" defaultValue={initial?.roomNumber} className={input} {...described('roomNumber', errors.roomNumber)} />

@@ -9,9 +9,14 @@ export const metadata: Metadata = {
   title: 'Add a room | Newman RCD',
 };
 
-export default async function NewRoomPage() {
+interface PageProps {
+  searchParams: Promise<{ building?: string | string[] }>;
+}
+
+export default async function NewRoomPage({ searchParams }: PageProps) {
   await requirePermission('rooms:create');
-  const [buildings, features] = await Promise.all([getBuildings(), getFeatures()]);
+  const [{ building }, buildings, features] = await Promise.all([searchParams, getBuildings(), getFeatures()]);
+  const defaultBuildingId = buildings.find((row) => row.id === building)?.id;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -23,7 +28,15 @@ export default async function NewRoomPage() {
           Back to Directory
         </Link>
         <h1 className="text-4xl font-bold text-gray-900 mb-8">Add a room</h1>
-        <RoomForm action={createRoomAction} buildings={buildings} features={features} submitLabel="Add room" cancelHref="/" />
+        <RoomForm
+          action={createRoomAction}
+          buildings={buildings}
+          features={features}
+          defaultBuildingId={defaultBuildingId}
+          addBuildingHref="/buildings/new"
+          submitLabel="Add room"
+          cancelHref="/"
+        />
       </div>
     </div>
   );
