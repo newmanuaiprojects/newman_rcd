@@ -1,6 +1,6 @@
 import { SearchFilters } from '../components/SearchFilters';
 import { RoomList } from '../components/RoomList';
-import { searchRooms, getBuildings, getFeatures } from '@/actions/rooms';
+import { searchRooms, getBuildings, getFeatures } from '@/lib/rooms/queries';
 import { AuthButtons } from '@/components/LoginButtons';
 import { can, getCurrentUser } from '@/lib/access';
 import Link from 'next/link';

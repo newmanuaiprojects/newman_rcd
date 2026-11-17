@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { getBuildings, getFeatures } from '@/actions/rooms';
+import { getBuildings, getFeatures } from '@/lib/rooms/queries';
 import { createRoomAction } from '@/actions/room-form';
 import { RoomForm } from '@/components/RoomForm';
 import { requirePermission } from '@/lib/access';

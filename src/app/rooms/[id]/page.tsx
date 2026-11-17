@@ -1,4 +1,4 @@
-import { getRoomById } from '@/actions/rooms';
+import { getRoomById } from '@/lib/rooms/queries';
 import { can, getCurrentUser } from '@/lib/access';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';

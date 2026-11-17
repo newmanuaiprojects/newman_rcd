@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getBuildings, getFeatures } from '@/actions/rooms';
+import { getBuildings, getFeatures } from '@/lib/rooms/queries';
 import { updateRoomAction } from '@/actions/room-form';
 import { FormSection } from '@/components/FormSection';
 import { RoomForm } from '@/components/RoomForm';
