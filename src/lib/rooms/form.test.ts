@@ -11,6 +11,8 @@ function form(fields: Record<string, string | string[]>): FormData {
     floor: '2',
     capacity: '32',
     notes: '',
+    photoFront: '',
+    photoBack: '',
   };
   for (const [name, value] of Object.entries({ ...defaults, ...fields })) {
     for (const item of Array.isArray(value) ? value : [value]) formData.append(name, item);
@@ -31,6 +33,7 @@ describe('parseRoomForm', () => {
         displayName: '  Radiologic Technology ',
         accessible: 'on',
         notes: 'X-Ray Room',
+        photoFront: 'https://wz366yqi6x.ufs.sh/f/front',
         features: ['projector', 'chairs'],
         'quantity:projector': '2',
         'details:projector': '',
@@ -48,6 +51,8 @@ describe('parseRoomForm', () => {
       capacity: 32,
       accessible: true,
       notes: 'X-Ray Room',
+      photoFront: 'https://wz366yqi6x.ufs.sh/f/front',
+      photoBack: null,
       features: {
         projector: { quantity: 2, details: null },
         chairs: { quantity: 32, details: 'rolling' },
@@ -67,6 +72,13 @@ describe('parseRoomForm', () => {
       roomType: 'Choose a room type.',
       floor: 'Choose a floor.',
       capacity: 'Enter the number of seats as a whole number.',
+    });
+  });
+
+  it('only takes photos uploaded to UploadThing', () => {
+    expect(errorsOf(form({ photoFront: 'https://example.com/room.jpg', photoBack: 'http://wz366yqi6x.ufs.sh/f/back' }))).toEqual({
+      photoFront: 'Upload the photo again.',
+      photoBack: 'Upload the photo again.',
     });
   });
 

@@ -3,6 +3,7 @@
 import { startTransition, useActionState, useState, type FormEvent, type ReactNode } from 'react';
 import Link from 'next/link';
 import type { RoomFormState } from '@/actions/room-form';
+import { RoomPhotoField } from '@/components/RoomPhotoField';
 import { fieldErrors, parseRoomForm, type RoomInput } from '@/lib/rooms/form';
 import { FLOORS, floorLabel, roomTypeLabel } from '@/lib/rooms/labels';
 import { ROOM_TYPES, type Building, type Feature } from '@/types/types';
@@ -42,6 +43,7 @@ export function RoomForm({ action, buildings, features, initial, submitLabel, ca
   const [state, formAction, pending] = useActionState(action, { errors: {} });
   const [clientErrors, setClientErrors] = useState<Record<string, string> | null>(null);
   const [selected, setSelected] = useState(() => new Set(Object.keys(initial?.features ?? {})));
+  const [uploading, setUploading] = useState<ReadonlySet<string>>(new Set());
   const errors = clientErrors ?? state.errors;
   const categories = [...new Set(features.map((feature) => feature.category))];
 
@@ -55,6 +57,16 @@ export function RoomForm({ action, buildings, features, initial, submitLabel, ca
     }
     setClientErrors(null);
     startTransition(() => formAction(formData));
+  }
+
+  function trackUpload(field: string) {
+    return (busy: boolean) =>
+      setUploading((current) => {
+        const next = new Set(current);
+        if (busy) next.add(field);
+        else next.delete(field);
+        return next;
+      });
   }
 
   function toggle(featureId: string) {
@@ -126,6 +138,26 @@ export function RoomForm({ action, buildings, features, initial, submitLabel, ca
         </div>
       </div>
 
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Photos</h2>
+        <div className="grid gap-6 sm:grid-cols-2">
+          <RoomPhotoField
+            name="photoFront"
+            label="Front view"
+            initialUrl={initial?.photoFront ?? null}
+            error={errors.photoFront}
+            onUploadingChange={trackUpload('photoFront')}
+          />
+          <RoomPhotoField
+            name="photoBack"
+            label="Back view"
+            initialUrl={initial?.photoBack ?? null}
+            error={errors.photoBack}
+            onUploadingChange={trackUpload('photoBack')}
+          />
+        </div>
+      </div>
+
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-6">
         <h2 className="text-lg font-semibold text-gray-900">Features</h2>
         {categories.map((category) => (
@@ -190,7 +222,7 @@ export function RoomForm({ action, buildings, features, initial, submitLabel, ca
         </Link>
         <button
           type="submit"
-          disabled={pending}
+          disabled={pending || uploading.size > 0}
           className="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white px-5 py-2 rounded-lg transition-colors"
         >
           {pending ? 'Saving…' : submitLabel}

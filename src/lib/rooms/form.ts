@@ -9,6 +9,12 @@ const optionalText = (max: number) =>
     .max(max, `Keep this under ${max} characters.`)
     .transform((value) => value || null);
 
+const photoUrl = z
+  .string()
+  .trim()
+  .transform((value) => value || null)
+  .pipe(z.url({ protocol: /^https$/, hostname: /\.ufs\.sh$/, error: 'Upload the photo again.' }).nullable());
+
 const wholeNumber = (message: string) => z.string(message).trim().regex(/^\d{1,5}$/, message).transform(Number);
 
 export const roomFormSchema = z.object({
@@ -20,6 +26,8 @@ export const roomFormSchema = z.object({
   capacity: wholeNumber('Enter the number of seats as a whole number.'),
   accessible: z.boolean(),
   notes: optionalText(1000),
+  photoFront: photoUrl,
+  photoBack: photoUrl,
   features: z.record(
     z.string().min(1),
     z.object({
@@ -42,6 +50,8 @@ export function parseRoomForm(formData: FormData) {
     capacity: formData.get('capacity'),
     accessible: formData.get('accessible') === 'on',
     notes: formData.get('notes'),
+    photoFront: formData.get('photoFront'),
+    photoBack: formData.get('photoBack'),
     features: Object.fromEntries(
       featureIds.map((id) => [id, { quantity: formData.get(`quantity:${id}`), details: formData.get(`details:${id}`) }]),
     ),

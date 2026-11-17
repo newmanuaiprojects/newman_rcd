@@ -28,6 +28,8 @@ export async function getRoomForEdit(roomId: string): Promise<{ title: string; v
         capacity: rooms.capacity,
         accessible: rooms.accessible,
         notes: rooms.notes,
+        photoFront: rooms.photoFront,
+        photoBack: rooms.photoBack,
       })
       .from(rooms)
       .innerJoin(buildings, eq(buildings.id, rooms.buildingId))
@@ -105,8 +107,8 @@ export async function updateRoom(roomId: string, input: RoomInput, editorId: str
 }
 
 function roomColumns(input: RoomInput) {
-  const { buildingId, roomNumber, displayName, roomType, floor, capacity, accessible, notes } = input;
-  return { buildingId, roomNumber, displayName, roomType, floor, capacity, accessible, notes };
+  const { buildingId, roomNumber, displayName, roomType, floor, capacity, accessible, notes, photoFront, photoBack } = input;
+  return { buildingId, roomNumber, displayName, roomType, floor, capacity, accessible, notes, photoFront, photoBack };
 }
 
 function roomFeatureRows(roomId: string, input: RoomInput) {
