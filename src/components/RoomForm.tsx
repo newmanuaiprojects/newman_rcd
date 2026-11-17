@@ -1,16 +1,18 @@
 'use client';
 
-import { startTransition, useActionState, useState, type FormEvent, type ReactNode } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import type { RoomFormState } from '@/actions/room-form';
+import { described, ErrorText, Field, input, inputBox } from '@/components/FormFields';
 import { FormSection } from '@/components/FormSection';
 import { RoomPhotoField } from '@/components/RoomPhotoField';
-import { fieldErrors, parseRoomForm, type RoomInput } from '@/lib/rooms/form';
+import { useFormAction } from '@/components/useFormAction';
+import type { FormState } from '@/lib/forms';
+import { parseRoomForm, type RoomInput } from '@/lib/rooms/form';
 import { FLOORS, floorLabel, roomTypeLabel } from '@/lib/rooms/labels';
 import { ROOM_TYPES, type Building, type Feature } from '@/types/types';
 
 interface RoomFormProps {
-  action: (state: RoomFormState, formData: FormData) => Promise<RoomFormState>;
+  action: (state: FormState, formData: FormData) => Promise<FormState>;
   buildings: Building[];
   features: Feature[];
   initial?: RoomInput;
@@ -18,55 +20,13 @@ interface RoomFormProps {
   cancelHref: string;
 }
 
-const box =
-  'rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 aria-[invalid=true]:border-red-500';
-const input = `${box} w-full`;
 const checkbox = 'h-4 w-4 shrink-0 accent-blue-600';
 
-function described(id: string, error?: string) {
-  return { id, 'aria-invalid': Boolean(error), 'aria-describedby': error ? `${id}-error` : undefined };
-}
-
-function ErrorText({ id, error }: { id: string; error?: string }) {
-  if (!error) return null;
-  return (
-    <p id={`${id}-error`} className="mt-1 text-sm text-red-600">
-      {error}
-    </p>
-  );
-}
-
-function Field({ id, label, error, children }: { id: string; label: string; error?: string; children: ReactNode }) {
-  return (
-    <div>
-      <label htmlFor={id} className="mb-1 block text-sm font-medium text-gray-700">
-        {label}
-      </label>
-      {children}
-      <ErrorText id={id} error={error} />
-    </div>
-  );
-}
-
 export function RoomForm({ action, buildings, features, initial, submitLabel, cancelHref }: RoomFormProps) {
-  const [state, formAction, pending] = useActionState(action, { errors: {} });
-  const [clientErrors, setClientErrors] = useState<Record<string, string> | null>(null);
+  const { errors, formAction, pending, submit } = useFormAction(action, parseRoomForm);
   const [selected, setSelected] = useState(() => new Set(Object.keys(initial?.features ?? {})));
   const [uploading, setUploading] = useState<ReadonlySet<string>>(new Set());
-  const errors = clientErrors ?? state.errors;
   const categories = [...new Set(features.map((feature) => feature.category))];
-
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const parsed = parseRoomForm(formData);
-    if (!parsed.success) {
-      setClientErrors(fieldErrors(parsed.error));
-      return;
-    }
-    setClientErrors(null);
-    startTransition(() => formAction(formData));
-  }
 
   function trackUpload(field: string) {
     return (busy: boolean) =>
@@ -130,7 +90,7 @@ export function RoomForm({ action, buildings, features, initial, submitLabel, ca
                   name={`quantity:${feature.id}`}
                   inputMode="numeric"
                   defaultValue={saved?.quantity ?? 1}
-                  className={`${box} w-20 py-1.5`}
+                  className={`${inputBox} w-20 py-1.5`}
                   {...described(quantityId, quantityError)}
                 />
               </div>

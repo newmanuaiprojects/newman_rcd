@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { fieldErrors, parseRoomForm } from '@/lib/rooms/form';
+import { fieldErrors } from '@/lib/forms';
+import { parseRoomForm } from '@/lib/rooms/form';
 
 function form(fields: Record<string, string | string[]>): FormData {
   const formData = new FormData();
