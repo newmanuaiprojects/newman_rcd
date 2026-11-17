@@ -159,6 +159,7 @@ export const features = pgTable("features", {
   id: text("id").primaryKey(),
   name: text("name").notNull().unique(),
   category: text("category").notNull(), // display, audio, connectivity, furniture, etc.
+  counted: boolean("counted").default(false).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });

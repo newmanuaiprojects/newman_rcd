@@ -53,7 +53,10 @@ export function parseRoomForm(formData: FormData) {
     photoFront: formData.get('photoFront'),
     photoBack: formData.get('photoBack'),
     features: Object.fromEntries(
-      featureIds.map((id) => [id, { quantity: formData.get(`quantity:${id}`), details: formData.get(`details:${id}`) }]),
+      featureIds.map((id) => [
+        id,
+        { quantity: formData.get(`quantity:${id}`) ?? '1', details: formData.get(`details:${id}`) ?? '' },
+      ]),
     ),
   });
 }

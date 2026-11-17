@@ -90,8 +90,8 @@ async function seed(data: SeedData, overwriteEdits: boolean): Promise<Report> {
           .values(data.features.map((feature) => ({ id: featureId(feature.name), ...feature })))
           .onConflictDoUpdate({
             target: features.name,
-            set: { category: excluded(features.category), updatedAt: sql`now()` },
-            setWhere: changed(features.category),
+            set: { category: excluded(features.category), counted: excluded(features.counted), updatedAt: sql`now()` },
+            setWhere: changed(features.category, features.counted),
           })
           .returning({ name: features.name });
 

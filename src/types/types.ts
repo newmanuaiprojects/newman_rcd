@@ -42,6 +42,7 @@ export interface Feature {
   id: string;
   name: string;
   category: string;
+  counted: boolean;
 }
 
 export const ROOM_TYPES = [

@@ -168,6 +168,7 @@ export async function getFeatures(): Promise<Feature[]> {
       id: features.id,
       name: features.name,
       category: features.category,
+      counted: features.counted,
     })
     .from(features)
     .orderBy(features.category, features.name);

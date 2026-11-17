@@ -82,6 +82,11 @@ describe('parseRoomForm', () => {
     });
   });
 
+  it('counts a checked feature with no count as one of it', () => {
+    const result = parseRoomForm(form({ features: ['hdmi'] }));
+    expect(result.success && result.data.features).toEqual({ hdmi: { quantity: 1, details: null } });
+  });
+
   it("puts a feature's quantity error on that feature", () => {
     expect(
       errorsOf(form({ features: ['projector'], 'quantity:projector': '0', 'details:projector': '' })),

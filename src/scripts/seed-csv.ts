@@ -3,7 +3,7 @@ import type { buildings, features, roomFeatures, rooms } from '@/lib/db/schema';
 import { ROOM_TYPES } from '@/types/types';
 
 export type SeedBuilding = Pick<typeof buildings.$inferSelect, 'abbreviation' | 'name'>;
-export type SeedFeature = Pick<typeof features.$inferSelect, 'name' | 'category'>;
+export type SeedFeature = Pick<typeof features.$inferSelect, 'name' | 'category' | 'counted'>;
 export type SeedRoomFeature = Pick<typeof roomFeatures.$inferSelect, 'quantity' | 'details'> & {
   feature: SeedFeature;
 };
@@ -29,24 +29,24 @@ export interface SeedError {
 export type SeedParseResult = { ok: true; data: SeedData } | { ok: false; errors: SeedError[] };
 
 const FEATURE_MAP: Record<string, SeedFeature> = {
-  projector_qty: { name: 'Projector', category: 'display' },
-  tv_qty: { name: 'TV/Monitor', category: 'display' },
-  whiteboard: { name: 'Whiteboard', category: 'display' },
-  chalkboard: { name: 'Chalkboard', category: 'display' },
-  smartboard: { name: 'Smartboard', category: 'display' },
-  speaker: { name: 'Speakers', category: 'audio' },
-  microphone: { name: 'Microphone', category: 'audio' },
-  camera: { name: 'Camera', category: 'audio' },
-  hdmi: { name: 'HDMI', category: 'connectivity' },
-  vga: { name: 'VGA', category: 'connectivity' },
-  usb_c: { name: 'USB-C', category: 'connectivity' },
-  presentation_stand: { name: 'Presentation Stand', category: 'furniture' },
-  workstation: { name: 'Workstation', category: 'furniture' },
-  windows: { name: 'Windows', category: 'characteristics' },
-  wash_station: { name: 'Wash Station', category: 'characteristics' },
+  projector_qty: { name: 'Projector', category: 'display', counted: true },
+  tv_qty: { name: 'TV/Monitor', category: 'display', counted: true },
+  whiteboard: { name: 'Whiteboard', category: 'display', counted: false },
+  chalkboard: { name: 'Chalkboard', category: 'display', counted: false },
+  smartboard: { name: 'Smartboard', category: 'display', counted: false },
+  speaker: { name: 'Speakers', category: 'audio', counted: false },
+  microphone: { name: 'Microphone', category: 'audio', counted: false },
+  camera: { name: 'Camera', category: 'audio', counted: false },
+  hdmi: { name: 'HDMI', category: 'connectivity', counted: false },
+  vga: { name: 'VGA', category: 'connectivity', counted: false },
+  usb_c: { name: 'USB-C', category: 'connectivity', counted: false },
+  presentation_stand: { name: 'Presentation Stand', category: 'furniture', counted: false },
+  workstation: { name: 'Workstation', category: 'furniture', counted: false },
+  windows: { name: 'Windows', category: 'characteristics', counted: false },
+  wash_station: { name: 'Wash Station', category: 'characteristics', counted: false },
 };
-const TABLES: SeedFeature = { name: 'Tables', category: 'furniture' };
-const CHAIRS: SeedFeature = { name: 'Chairs', category: 'furniture' };
+const TABLES: SeedFeature = { name: 'Tables', category: 'furniture', counted: true };
+const CHAIRS: SeedFeature = { name: 'Chairs', category: 'furniture', counted: true };
 
 const COLUMNS = [
   'building_name',
@@ -127,7 +127,7 @@ export function parseSeedCsv(content: string): SeedParseResult {
 
     const roomFeatures: SeedRoomFeature[] = [];
     for (const [column, feature] of Object.entries(FEATURE_MAP)) {
-      if (column.endsWith('_qty')) {
+      if (feature.counted) {
         const quantity = parseQuantity(record, column, rowErrors);
         if (quantity) roomFeatures.push({ feature, quantity, details: null });
       } else if (isPresent(record[column])) {
