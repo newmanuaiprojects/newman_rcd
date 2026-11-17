@@ -1,7 +1,8 @@
 import { relations } from "drizzle-orm";
 import { pgTable, text, timestamp, boolean, integer, primaryKey, pgEnum } from "drizzle-orm/pg-core";
+import { ROOM_TYPES } from "@/types/types";
 
-export const ROOM_TYPE = pgEnum("room_type", ["classroom", "computer-lab", "science-lab", "lecture-hall", "office", "performance-hall", "chapel", "gym", "breakroom", "conference-room", "lobby", "study-room", "special"]);
+export const ROOM_TYPE = pgEnum("room_type", ROOM_TYPES);
 export const FEATURE_CATEGORY = pgEnum("feature_category", ["display", "audio", "connectivity", "furniture", "characteristics", "other"]);
 
 export const user = pgTable("user", {

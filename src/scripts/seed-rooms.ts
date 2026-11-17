@@ -5,12 +5,11 @@ import { nanoid } from 'nanoid';
 import { drizzle } from 'drizzle-orm/neon-http';
 import { config } from 'dotenv';
 import * as schema from '@/lib/db/schema';
+import { ROOM_TYPES, type RoomType } from '@/types/types';
 
 config({ path: '.env.local' });
 
 const db = drizzle(process.env.DATABASE_URL!, { schema });
-
-const VALID_ROOM_TYPES = ["classroom", "computer-lab", "science-lab", "lecture-hall", "office", "performance-hall", "chapel", "gym", "breakroom", "conference-room", "lobby", "study-room", "special"] as const;
 
 // Type for our CSV row
 interface RoomDataRow {
@@ -168,8 +167,8 @@ async function seedDatabase() {
       }
 
       // Validate room type
-      if (!VALID_ROOM_TYPES.includes(row.room_type as (typeof VALID_ROOM_TYPES)[number])) {
-        console.error(`  ✗ Invalid room type "${row.room_type}" for ${row.building_abbrev} ${row.room_number}. Valid types: ${VALID_ROOM_TYPES.join(', ')}`);
+      if (!ROOM_TYPES.includes(row.room_type as RoomType)) {
+        console.error(`  ✗ Invalid room type "${row.room_type}" for ${row.building_abbrev} ${row.room_number}. Valid types: ${ROOM_TYPES.join(', ')}`);
         continue;
       }
 
@@ -179,7 +178,7 @@ async function seedDatabase() {
         id: roomId,
         buildingId,
         roomNumber: row.room_number,
-        roomType: row.room_type as (typeof VALID_ROOM_TYPES)[number],
+        roomType: row.room_type as RoomType,
         displayName: row.room_display_name || null,
         capacity: parseInt(row.chair_qty || '0') || 0,
         floor: parseInt(row.floor),
