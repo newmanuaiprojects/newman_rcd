@@ -72,6 +72,7 @@ export default async function RoomPage({ params }: PageProps) {
                 <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">
                   {room.buildingAbbrev} {room.roomNumber}
                 </h1>
+                {room.displayName && <p className="mt-1 text-xl text-gray-700">{room.displayName}</p>}
 
                 <p className="mt-2 text-gray-600 flex items-center gap-2">
                   <span className="font-medium text-gray-900">{room.buildingName}</span> 
