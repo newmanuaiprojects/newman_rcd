@@ -1,7 +1,6 @@
 import { defineConfig } from "drizzle-kit";
-import dotenv from 'dotenv'
 
-dotenv.config({ path: '.env.local' })
+process.loadEnvFile('.env.local')
 
 export default defineConfig({
     dbCredentials: {
