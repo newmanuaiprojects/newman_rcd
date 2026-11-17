@@ -18,8 +18,9 @@ interface RoomFormProps {
   cancelHref: string;
 }
 
-const input =
-  'w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 aria-[invalid=true]:border-red-500';
+const box =
+  'rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 aria-[invalid=true]:border-red-500';
+const input = `${box} w-full`;
 const checkbox = 'h-4 w-4 shrink-0 accent-blue-600';
 
 function described(id: string, error?: string) {
@@ -122,14 +123,14 @@ export function RoomForm({ action, buildings, features, initial, submitLabel, ca
           {checked && (
             <>
               <div className="flex items-center gap-2">
-                <label htmlFor={quantityId} className="text-gray-600">
+                <label htmlFor={quantityId} className="whitespace-nowrap text-gray-600">
                   How many
                 </label>
                 <input
                   name={`quantity:${feature.id}`}
                   inputMode="numeric"
                   defaultValue={saved?.quantity ?? 1}
-                  className={`${input} w-20 py-1.5`}
+                  className={`${box} w-20 py-1.5`}
                   {...described(quantityId, quantityError)}
                 />
               </div>
@@ -215,7 +216,7 @@ export function RoomForm({ action, buildings, features, initial, submitLabel, ca
         </div>
       </FormSection>
 
-      <FormSection id="photos-heading" title="Photos" description="A front and a back view help people recognize the room.">
+      <FormSection id="photos-heading" title="Photos" description="A front and a rear view help people recognize the room.">
         <div className="grid gap-6 sm:grid-cols-2">
           <RoomPhotoField
             name="photoFront"
@@ -226,7 +227,7 @@ export function RoomForm({ action, buildings, features, initial, submitLabel, ca
           />
           <RoomPhotoField
             name="photoBack"
-            label="Back view"
+            label="Rear view"
             initialUrl={initial?.photoBack ?? null}
             error={errors.photoBack}
             onUploadingChange={trackUpload('photoBack')}
