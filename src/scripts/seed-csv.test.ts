@@ -57,10 +57,10 @@ describe('parseSeedCsv', () => {
         photoFront: 'https://example.ufs.sh/f/front',
         photoBack: null,
         features: [
-          { feature: { name: 'Projector', category: 'display' }, quantity: 2, details: null },
-          { feature: { name: 'Whiteboard', category: 'display' }, quantity: 1, details: null },
-          { feature: { name: 'Tables', category: 'furniture' }, quantity: 16, details: '16, normal' },
-          { feature: { name: 'Chairs', category: 'furniture' }, quantity: 32, details: 'rolling' },
+          { feature: { name: 'Projector', category: 'display', counted: true }, quantity: 2, details: null },
+          { feature: { name: 'Whiteboard', category: 'display', counted: false }, quantity: 1, details: null },
+          { feature: { name: 'Tables', category: 'furniture', counted: true }, quantity: 16, details: '16, normal' },
+          { feature: { name: 'Chairs', category: 'furniture', counted: true }, quantity: 32, details: 'rolling' },
         ],
       },
     ]);
@@ -76,7 +76,7 @@ describe('parseSeedCsv', () => {
   it('lists each building and feature once', () => {
     const data = parsed(csv({ ...ROOM, chair_qty: '10' }, { ...ROOM, room_number: '262', chair_qty: '20' }));
     expect(data.buildings).toEqual([{ abbreviation: 'ECK', name: 'Eck Hall' }]);
-    expect(data.features).toEqual([{ name: 'Chairs', category: 'furniture' }]);
+    expect(data.features).toEqual([{ name: 'Chairs', category: 'furniture', counted: true }]);
   });
 
   it('reports every bad row by its line and returns nothing to write', () => {

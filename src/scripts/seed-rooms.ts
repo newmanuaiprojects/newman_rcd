@@ -3,10 +3,12 @@ import { nanoid } from 'nanoid';
 import { and, eq, notInArray, sql, type SQL } from 'drizzle-orm';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 import { db } from '@/lib/db';
-import { buildings, features, roomFeatures, rooms } from '@/lib/db/schema';
+import { excluded } from '@/lib/db/sql';
+import { buildings, features, roomFeatures, roomRevision, rooms } from '@/lib/db/schema';
 import { parseSeedCsv, roomLabel, type SeedData } from '@/scripts/seed-csv';
 
 const CSV_PATH = './seed-data.csv';
+const OVERWRITE_EDITS = '--overwrite-edits';
 
 interface Tally {
   inserted: number;
@@ -20,9 +22,19 @@ interface Report {
   rooms: Tally;
   roomFeatures: Tally & { removed: number };
   roomsNotInCsv: string[];
+  keptEdits: string[];
+  overwroteEdits: string[];
 }
 
 async function main() {
+  const options = process.argv.slice(2);
+  const unknown = options.filter((option) => option !== OVERWRITE_EDITS);
+  if (unknown.length > 0) {
+    console.error(`unknown option ${unknown.join(' ')}. usage: pnpm db:seed [${OVERWRITE_EDITS}]`);
+    process.exitCode = 1;
+    return;
+  }
+
   const result = parseSeedCsv(readFileSync(CSV_PATH, 'utf-8'));
   if (!result.ok) {
     console.error(`${CSV_PATH} has ${result.errors.length} problems, so nothing was written:`);
@@ -32,11 +44,11 @@ async function main() {
   }
 
   console.log(`Read ${result.data.rooms.length} rooms from ${CSV_PATH}\n`);
-  printReport(await seed(result.data));
+  printReport(await seed(result.data, options.includes(OVERWRITE_EDITS)));
 }
 
-async function seed(data: SeedData): Promise<Report> {
-  const [existingBuildings, existingFeatures, existingRooms, existingRoomFeatures] = await db.batch([
+async function seed(data: SeedData, overwriteEdits: boolean): Promise<Report> {
+  const [existingBuildings, existingFeatures, existingRooms, existingRoomFeatures, editedRooms] = await db.batch([
     db.select({ id: buildings.id, abbreviation: buildings.abbreviation }).from(buildings),
     db.select({ id: features.id, name: features.name }).from(features),
     db
@@ -44,11 +56,13 @@ async function seed(data: SeedData): Promise<Report> {
       .from(rooms)
       .innerJoin(buildings, eq(rooms.buildingId, buildings.id)),
     db.select({ roomId: roomFeatures.roomId, featureId: roomFeatures.featureId }).from(roomFeatures),
+    db.selectDistinct({ roomId: roomRevision.roomId }).from(roomRevision),
   ]);
 
   const buildingIds = new Map(existingBuildings.map(({ abbreviation, id }) => [abbreviation, id]));
   const featureIds = new Map(existingFeatures.map(({ name, id }) => [name, id]));
   const roomIds = new Map(existingRooms.map(({ abbreviation, roomNumber, id }) => [roomLabel(abbreviation, roomNumber), id]));
+  const editedInApp = new Set(editedRooms.map((row) => row.roomId));
   const featureIdsByRoom = new Map<string, Set<string>>();
   for (const { roomId, featureId } of existingRoomFeatures) {
     featureIdsByRoom.set(roomId, (featureIdsByRoom.get(roomId) ?? new Set<string>()).add(featureId));
@@ -76,18 +90,25 @@ async function seed(data: SeedData): Promise<Report> {
           .values(data.features.map((feature) => ({ id: featureId(feature.name), ...feature })))
           .onConflictDoUpdate({
             target: features.name,
-            set: { category: excluded(features.category), updatedAt: sql`now()` },
-            setWhere: changed(features.category),
+            set: { category: excluded(features.category), counted: excluded(features.counted), updatedAt: sql`now()` },
+            setWhere: changed(features.category, features.counted),
           })
           .returning({ name: features.name });
 
   const changedRooms: string[] = [];
+  const keptEdits: string[] = [];
+  const overwroteEdits: string[] = [];
   const roomFeatureCounts = { inserted: 0, updated: 0, unchanged: 0, removed: 0 };
 
   for (const room of data.rooms) {
     const { buildingAbbreviation, features: seededFeatures, ...columns } = room;
     const label = roomLabel(buildingAbbreviation, columns.roomNumber);
     const id = roomId(label);
+    if (editedInApp.has(id) && !overwriteEdits) {
+      keptEdits.push(label);
+      continue;
+    }
+    if (editedInApp.has(id)) overwroteEdits.push(label);
     const featureRows = seededFeatures.map(({ feature, quantity, details }) => ({
       roomId: id,
       featureId: featureId(feature.name),
@@ -166,9 +187,11 @@ async function seed(data: SeedData): Promise<Report> {
   return {
     buildings: tally(data.buildings.length, changedBuildings.map((row) => row.abbreviation), buildingIds),
     features: tally(data.features.length, changedFeatures.map((row) => row.name), featureIds),
-    rooms: tally(data.rooms.length, changedRooms, roomIds),
+    rooms: tally(data.rooms.length - keptEdits.length, changedRooms, roomIds),
     roomFeatures: roomFeatureCounts,
     roomsNotInCsv: [...roomIds.keys()].filter((label) => !seededRooms.has(label)).sort(),
+    keptEdits,
+    overwroteEdits,
   };
 }
 
@@ -180,10 +203,6 @@ function stableIds(existing: ReadonlyMap<string, string>): (key: string) => stri
     ids.set(key, id);
     return id;
   };
-}
-
-function excluded(column: AnyPgColumn): SQL {
-  return sql`excluded.${sql.identifier(column.name)}`;
 }
 
 // Skips the update, and leaves updated_at alone, when the CSV matches what is stored.
@@ -204,6 +223,15 @@ function printReport(report: Report) {
   console.log(`features: ${describe(report.features)}`);
   console.log(`rooms: ${describe(report.rooms)}`);
   console.log(`room_features: ${describe(report.roomFeatures)}, ${report.roomFeatures.removed} removed`);
+
+  if (report.keptEdits.length > 0) {
+    console.log(`\nKept as edited in the app (${OVERWRITE_EDITS} replaces them with the CSV):`);
+    for (const label of report.keptEdits) console.log(`  ${label}`);
+  }
+  if (report.overwroteEdits.length > 0) {
+    console.log('\nReplaced edits made in the app with the CSV:');
+    for (const label of report.overwroteEdits) console.log(`  ${label}`);
+  }
 
   if (report.roomsNotInCsv.length === 0) {
     console.log('\nEvery room in the database is in the CSV.');

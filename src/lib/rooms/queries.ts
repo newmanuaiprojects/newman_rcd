@@ -1,8 +1,8 @@
-'use server';
+import 'server-only';
 
 import { db } from '@/lib/db';
 import { buildings, rooms, features, roomFeatures } from '@/lib/db/schema';
-import { eq, sql, and, or, gte, lte, ilike, inArray } from 'drizzle-orm';
+import { eq, and, or, gte, lte, ilike, inArray } from 'drizzle-orm';
 import type { SearchFilters, RoomWithDetails, Building, Feature, RoomType } from '@/types/types';
 
 export async function searchRooms(filters: SearchFilters): Promise<RoomWithDetails[]> {
@@ -168,6 +168,7 @@ export async function getFeatures(): Promise<Feature[]> {
       id: features.id,
       name: features.name,
       category: features.category,
+      counted: features.counted,
     })
     .from(features)
     .orderBy(features.category, features.name);
