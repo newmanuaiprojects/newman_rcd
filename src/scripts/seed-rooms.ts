@@ -3,6 +3,7 @@ import { nanoid } from 'nanoid';
 import { and, eq, notInArray, sql, type SQL } from 'drizzle-orm';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 import { db } from '@/lib/db';
+import { excluded } from '@/lib/db/sql';
 import { buildings, features, roomFeatures, rooms } from '@/lib/db/schema';
 import { parseSeedCsv, roomLabel, type SeedData } from '@/scripts/seed-csv';
 
@@ -180,10 +181,6 @@ function stableIds(existing: ReadonlyMap<string, string>): (key: string) => stri
     ids.set(key, id);
     return id;
   };
-}
-
-function excluded(column: AnyPgColumn): SQL {
-  return sql`excluded.${sql.identifier(column.name)}`;
 }
 
 // Skips the update, and leaves updated_at alone, when the CSV matches what is stored.
