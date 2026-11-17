@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { pgTable, text, timestamp, boolean, integer, primaryKey, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, integer, primaryKey, pgEnum, unique } from "drizzle-orm/pg-core";
 import { ROOM_TYPES } from "@/types/types";
 
 export const ROOM_TYPE = pgEnum("room_type", ROOM_TYPES);
@@ -91,7 +91,9 @@ export const rooms = pgTable("rooms", {
   photoFront: text("photo_front"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
-});
+}, (table) => [
+  unique().on(table.buildingId, table.roomNumber),
+]);
 
 // features table
 export const features = pgTable("features", {
