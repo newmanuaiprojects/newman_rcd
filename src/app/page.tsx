@@ -2,6 +2,8 @@ import { SearchFilters } from '../components/SearchFilters';
 import { RoomList } from '../components/RoomList';
 import { searchRooms, getBuildings, getFeatures } from '@/actions/rooms';
 import { AuthButtons } from '@/components/LoginButtons';
+import { can, getCurrentUser } from '@/lib/access';
+import Link from 'next/link';
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -27,10 +29,11 @@ export default async function Home({ searchParams }: PageProps) {
   };
 
   // Fetch data in parallel
-  const [rooms, buildings, features] = await Promise.all([
+  const [rooms, buildings, features, currentUser] = await Promise.all([
     searchRooms(filters),
     getBuildings(),
     getFeatures(),
+    getCurrentUser(),
   ]);
 
   return (
@@ -41,7 +44,12 @@ export default async function Home({ searchParams }: PageProps) {
             <h1 className="text-4xl font-bold text-gray-900 mb-2">Room Directory</h1>
             <p className="text-gray-600">Search and filter rooms across campus</p>
           </div>
-          <div>
+          <div className="flex items-center gap-3">
+            {can(currentUser, 'access:manage') && (
+              <Link href="/admin/access" className="text-gray-700 hover:text-blue-600 px-4 py-2 rounded transition-colors">
+                Admin
+              </Link>
+            )}
             <AuthButtons />
           </div>
         </div>

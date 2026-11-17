@@ -1,8 +1,10 @@
 import { relations } from "drizzle-orm";
 import { pgTable, text, timestamp, boolean, integer, primaryKey, pgEnum, unique } from "drizzle-orm/pg-core";
 import { ROOM_TYPES } from "@/types/types";
+import { PERMISSIONS } from "@/lib/access/permissions";
 
 export const ROOM_TYPE = pgEnum("room_type", ROOM_TYPES);
+export const PERMISSION = pgEnum("permission", PERMISSIONS);
 export const FEATURE_CATEGORY = pgEnum("feature_category", ["display", "audio", "connectivity", "furniture", "characteristics", "other"]);
 
 export const user = pgTable("user", {
@@ -64,6 +66,60 @@ export const verification = pgTable("verification", {
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
 });
+
+export const role = pgTable("role", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  description: text("description"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const rolePermission = pgTable(
+  "role_permission",
+  {
+    roleId: text("role_id")
+      .notNull()
+      .references(() => role.id, { onDelete: "cascade" }),
+    permission: PERMISSION("permission").notNull(),
+    grantedBy: text("granted_by").references(() => user.id, { onDelete: "set null" }),
+    grantedAt: timestamp("granted_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.roleId, table.permission] }),
+  ]
+);
+
+export const userRole = pgTable(
+  "user_role",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    roleId: text("role_id")
+      .notNull()
+      .references(() => role.id, { onDelete: "cascade" }),
+    grantedBy: text("granted_by").references(() => user.id, { onDelete: "set null" }),
+    grantedAt: timestamp("granted_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.roleId] }),
+  ]
+);
+
+export const userPermission = pgTable(
+  "user_permission",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    permission: PERMISSION("permission").notNull(),
+    grantedBy: text("granted_by").references(() => user.id, { onDelete: "set null" }),
+    grantedAt: timestamp("granted_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.permission] }),
+  ]
+);
 
 // buildings table
 export const buildings = pgTable("buildings", {
