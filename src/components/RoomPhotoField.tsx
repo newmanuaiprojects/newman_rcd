@@ -42,7 +42,7 @@ export function RoomPhotoField({ name, label, initialUrl, error, onUploadingChan
     <div className="flex flex-col gap-3">
       <p className="text-sm font-medium text-gray-700">{label}</p>
       <input type="hidden" name={name} value={url ?? ''} />
-      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg border border-gray-200 bg-gray-100">
+      <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-dashed border-gray-300 bg-gray-50">
         {url ? (
           <Image src={url} alt={`${label} of the room`} fill sizes="(min-width: 640px) 360px, 100vw" className="object-cover" />
         ) : (

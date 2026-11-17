@@ -23,7 +23,7 @@ export const roomFormSchema = z.object({
   displayName: optionalText(100),
   roomType: z.enum(ROOM_TYPES, 'Choose a room type.'),
   floor: wholeNumber('Choose a floor.').refine((floor) => FLOORS.includes(floor), 'Choose a floor.'),
-  capacity: wholeNumber('Enter the number of seats as a whole number.'),
+  capacity: wholeNumber('Enter the capacity as a whole number.'),
   accessible: z.boolean(),
   notes: optionalText(1000),
   photoFront: photoUrl,

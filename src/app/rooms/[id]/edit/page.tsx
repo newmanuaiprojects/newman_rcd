@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getBuildings, getFeatures } from '@/actions/rooms';
 import { updateRoomAction } from '@/actions/room-form';
+import { FormSection } from '@/components/FormSection';
 import { RoomForm } from '@/components/RoomForm';
 import { requirePermission } from '@/lib/access';
 import { getRoomForEdit, getRoomHistory } from '@/lib/rooms/data';
@@ -34,7 +35,7 @@ export default async function EditRoomPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4 max-w-3xl">
+      <div className="container mx-auto px-4 max-w-5xl">
         <Link href={`/rooms/${id}`} className="text-gray-500 hover:text-blue-600 transition-colors mb-6 inline-flex items-center gap-2">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -51,26 +52,25 @@ export default async function EditRoomPage({ params }: PageProps) {
           cancelHref={`/rooms/${id}`}
         />
 
-        <section aria-labelledby="history-heading" className="mt-10">
-          <h2 id="history-heading" className="text-lg font-semibold text-gray-900 mb-3">
-            History
-          </h2>
-          {history.length === 0 ? (
-            <p className="text-sm text-gray-600">No changes have been saved here yet.</p>
-          ) : (
-            <ol className="bg-white rounded-xl border border-gray-100 shadow-sm divide-y divide-gray-100">
-              {history.map((entry) => (
-                <li key={entry.id} className="px-5 py-3 text-sm text-gray-700">
-                  {entry.change === 'created' ? 'Added' : 'Edited'} by {entry.editorName ?? 'a deleted account'}
-                  <span className="text-gray-500">
-                    {' · '}
-                    <time dateTime={entry.changedAt.toISOString()}>{campusTime.format(entry.changedAt)}</time>
-                  </span>
-                </li>
-              ))}
-            </ol>
-          )}
-        </section>
+        <div className="mt-10">
+          <FormSection id="history-heading" title="History" description="Every save made here, newest first.">
+            {history.length === 0 ? (
+              <p className="text-sm text-gray-600">No changes have been saved here yet.</p>
+            ) : (
+              <ol className="-my-3 divide-y divide-gray-100">
+                {history.map((entry) => (
+                  <li key={entry.id} className="py-3 text-sm text-gray-700">
+                    {entry.change === 'created' ? 'Added' : 'Edited'} by {entry.editorName ?? 'a deleted account'}
+                    <span className="text-gray-500">
+                      {' · '}
+                      <time dateTime={entry.changedAt.toISOString()}>{campusTime.format(entry.changedAt)}</time>
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </FormSection>
+        </div>
       </div>
     </div>
   );

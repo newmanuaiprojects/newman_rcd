@@ -71,7 +71,7 @@ describe('parseRoomForm', () => {
       roomNumber: 'Enter a room number.',
       roomType: 'Choose a room type.',
       floor: 'Choose a floor.',
-      capacity: 'Enter the number of seats as a whole number.',
+      capacity: 'Enter the capacity as a whole number.',
     });
   });
 
