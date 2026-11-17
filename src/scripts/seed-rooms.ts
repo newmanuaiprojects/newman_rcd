@@ -1,13 +1,10 @@
 import { readFileSync } from 'fs';
-import { config } from 'dotenv';
 import { nanoid } from 'nanoid';
 import { and, eq, notInArray, sql, type SQL } from 'drizzle-orm';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 import { db } from '@/lib/db';
 import { buildings, features, roomFeatures, rooms } from '@/lib/db/schema';
 import { parseSeedCsv, roomLabel, type SeedData } from '@/scripts/seed-csv';
-
-config({ path: '.env.local' });
 
 const CSV_PATH = './seed-data.csv';
 
