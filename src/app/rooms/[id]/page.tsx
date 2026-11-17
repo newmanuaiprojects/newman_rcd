@@ -1,4 +1,5 @@
 import { getRoomById } from '@/actions/rooms';
+import { can, getCurrentUser } from '@/lib/access';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 
@@ -8,7 +9,7 @@ interface PageProps {
 
 export default async function RoomPage({ params }: PageProps) {
   const { id } = await params;
-  const room = await getRoomById(id);
+  const [room, currentUser] = await Promise.all([getRoomById(id), getCurrentUser()]);
 
   if (!room) {
     notFound();
@@ -18,12 +19,19 @@ export default async function RoomPage({ params }: PageProps) {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-5xl">
         {/* Navigation */}
-        <Link href="/" className="text-gray-500 hover:text-blue-600 transition-colors mb-6 inline-flex items-center gap-2">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          Back to Directory
-        </Link>
+        <div className="flex items-center justify-between gap-4 mb-6">
+          <Link href="/" className="text-gray-500 hover:text-blue-600 transition-colors inline-flex items-center gap-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Directory
+          </Link>
+          {can(currentUser, 'rooms:update') && (
+            <Link href={`/rooms/${room.id}/edit`} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors">
+              Edit
+            </Link>
+          )}
+        </div>
 
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
           
