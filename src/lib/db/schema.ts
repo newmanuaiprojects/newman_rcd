@@ -1,10 +1,13 @@
 import { relations } from "drizzle-orm";
-import { pgTable, text, timestamp, boolean, integer, primaryKey, pgEnum, unique } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, integer, primaryKey, pgEnum, unique, jsonb, index } from "drizzle-orm/pg-core";
 import { ROOM_TYPES } from "@/types/types";
 import { PERMISSIONS } from "@/lib/access/permissions";
 
 export const ROOM_TYPE = pgEnum("room_type", ROOM_TYPES);
 export const PERMISSION = pgEnum("permission", PERMISSIONS);
+export const ROOM_CHANGE = pgEnum("room_change", ["created", "updated"]);
+
+export const ROOM_NUMBER_UNIQUE = "rooms_building_id_room_number_unique";
 export const FEATURE_CATEGORY = pgEnum("feature_category", ["display", "audio", "connectivity", "furniture", "characteristics", "other"]);
 
 export const user = pgTable("user", {
@@ -148,7 +151,7 @@ export const rooms = pgTable("rooms", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 }, (table) => [
-  unique().on(table.buildingId, table.roomNumber),
+  unique(ROOM_NUMBER_UNIQUE).on(table.buildingId, table.roomNumber),
 ]);
 
 // features table
@@ -176,6 +179,23 @@ export const roomFeatures = pgTable(
   },
   (table) => [
     primaryKey({ columns: [table.roomId, table.featureId] }),
+  ]
+);
+
+export const roomRevision = pgTable(
+  "room_revision",
+  {
+    id: text("id").primaryKey(),
+    roomId: text("room_id")
+      .notNull()
+      .references(() => rooms.id, { onDelete: "cascade" }),
+    change: ROOM_CHANGE("change").notNull(),
+    changedBy: text("changed_by").references(() => user.id, { onDelete: "set null" }),
+    changedAt: timestamp("changed_at", { withTimezone: true }).defaultNow().notNull(),
+    snapshot: jsonb("snapshot").notNull(),
+  },
+  (table) => [
+    index("room_revision_room_id_changed_at_idx").on(table.roomId, table.changedAt),
   ]
 );
 
