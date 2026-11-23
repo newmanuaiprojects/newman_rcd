@@ -1,4 +1,3 @@
-onlyBuiltDependencies:
-  - esbuild
-  - sharp
-  - unrs-resolver
+allowBuilds:
+  esbuild: true
+  msgpackr-extract: false

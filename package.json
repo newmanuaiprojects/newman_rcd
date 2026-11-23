@@ -2,39 +2,46 @@
   "name": "rcd",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@12.21.0",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:push": "drizzle-kit push",
-    "db:seed": "tsx src/scripts/seed-rooms.ts"
+    "db:seed": "tsx --env-file=.env.local src/scripts/seed-rooms.ts",
+    "access:seed": "tsx --env-file=.env.local src/scripts/seed-access.ts",
+    "access:grant": "tsx --env-file=.env.local src/scripts/grant-role.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
+    "@uploadthing/react": "^7.3.3",
     "better-auth": "^1.3.34",
-    "dotenv": "^17.2.3",
     "drizzle-orm": "^0.44.7",
     "nanoid": "^5.1.6",
-    "next": "16.0.3",
-    "pnpm": "^10.26.2",
+    "next": "16.4.5",
     "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react-dom": "19.2.0",
+    "server-only": "^0.0.1",
+    "uploadthing": "^7.7.4",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "csv-parse": "^6.1.0",
     "drizzle-kit": "^0.31.6",
     "eslint": "^9",
-    "eslint-config-next": "16.0.3",
+    "eslint-config-next": "16.4.5",
     "tailwindcss": "^4",
     "tsx": "^4.20.6",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^5.1.0"
   }
 }
