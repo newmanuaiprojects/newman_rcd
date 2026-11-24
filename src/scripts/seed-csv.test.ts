@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { parseSeedCsv } from '@/scripts/seed-csv';
 
 const HEADER =
-  'building_name,building_abbrev,room_number,room_display_name,room_type,floor,projector_qty,tv_qty,whiteboard,chalkboard,smartboard,speaker,microphone,camera,hdmi,usb_c,vga,table_qty,table_details,chair_qty,chair_type,presentation_stand,workstation,windows,wash_station,notes,photo_back,photo_front';
+  'building_name,building_abbrev,room_number,room_display_name,room_type,floor,projector_qty,tv_qty,whiteboard,chalkboard,smartboard,speaker,microphone,camera,hdmi,usb_c,vga,table_qty,table_details,chair_qty,chair_type,presentation_stand,workstation,windows,wash_station,notes,photo_back,photo_front,fire_marshal_capacity';
 const COLUMNS = HEADER.split(',');
 
 type Row = Partial<Record<string, string>>;
@@ -52,6 +52,7 @@ describe('parseSeedCsv', () => {
         roomType: 'classroom',
         displayName: 'Radiologic Technology',
         capacity: 32,
+        fireMarshalCapacity: null,
         floor: 2,
         notes: 'X-Ray Room',
         photoFront: 'https://example.ufs.sh/f/front',
@@ -72,6 +73,11 @@ describe('parseSeedCsv', () => {
     expect(room.features).toEqual([]);
     expect(room.displayName).toBeNull();
   });
+
+  it('read the fire marshal capacity when the row has one', () => {
+    const [room] = parsed(csv({ ...ROOM, fire_marshal_capacity: '42' })).rooms;
+    expect(room.fireMarshalCapacity).toBe(42);
+  })
 
   it('lists each building and feature once', () => {
     const data = parsed(csv({ ...ROOM, chair_qty: '10' }, { ...ROOM, room_number: '262', chair_qty: '20' }));

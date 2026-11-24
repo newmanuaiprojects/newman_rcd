@@ -9,7 +9,7 @@ export type SeedRoomFeature = Pick<typeof roomFeatures.$inferSelect, 'quantity' 
 };
 export type SeedRoom = Pick<
   typeof rooms.$inferSelect,
-  'roomNumber' | 'roomType' | 'displayName' | 'capacity' | 'floor' | 'notes' | 'photoFront' | 'photoBack'
+  'roomNumber' | 'roomType' | 'displayName' | 'capacity' | 'fireMarshalCapacity' | 'floor' | 'notes' | 'photoFront' | 'photoBack'
 > & {
   buildingAbbreviation: string;
   features: SeedRoomFeature[];
@@ -63,6 +63,7 @@ const COLUMNS = [
   'notes',
   'photo_back',
   'photo_front',
+  'fire_marshal_capacity',
 ];
 
 type CsvRow = Record<string, string>;
@@ -146,6 +147,8 @@ export function parseSeedCsv(content: string): SeedParseResult {
       roomFeatures.push({ feature: CHAIRS, quantity: chairs, details: record.chair_type || null });
     }
 
+    const fireMarshalCapacity = parseQuantity(record, 'fire_marshal_capacity', rowErrors);
+
     if (rowErrors.length > 0 || !roomType || floor === undefined) {
       errors.push(...rowErrors.map((message) => ({ line, message })));
       continue;
@@ -157,6 +160,7 @@ export function parseSeedCsv(content: string): SeedParseResult {
       roomType,
       displayName: record.room_display_name || null,
       capacity: chairs ?? 0,
+      fireMarshalCapacity: fireMarshalCapacity ?? null,
       floor,
       notes: record.notes || null,
       photoFront: record.photo_front || null,
